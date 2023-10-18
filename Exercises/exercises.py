@@ -152,7 +152,8 @@ def get_length(geometry):
 object = LineString([point1, point2, point3])
 length = get_length(object)
 
-print(f'The length is of the {type(object)} is {length:.2f} centimeters' )
+#print 
+(f'The length is of the {type(object)} is {length:.2f} centimeters' )
 
 
 
@@ -274,11 +275,82 @@ write_files
 
 # let's create a simple map showing the points with matplotlib
 
-gdf['geometry'].plot(marker='o', color='cyan', markersize=2,)
-plt.title("Kruger national park South Africa  WGS84")
-# plt.xlabel("")
-# plt.ylabel("Latitude")
-plt.show()
+# gdf['geometry'].plot(marker='o', color='cyan', markersize=2,)
+# plt.title("Kruger national park South Africa  WGS84")
+# # plt.xlabel("")
+# # plt.ylabel("Latitude")
+# plt.show()
+
+
+
+
+
+
+
+
+# 10.For this, we will need to use the userid column of the data set kruger_posts.shp that we created in Problem 2.
+# a. Read the input file kruger_points.shp into a geo-data frame kruger_points. Transform the data from WGS84 to an EPSG:32735 projection
+# (UTM Zone 35S, suitable for South Africa). This CRS has metres as units. 
+# b. Group the data by userid and store the grouped data in a variable grouped_by_users. 
+# c. Create shapely.geometry.LineString objects for each user connecting the points from oldest to most recent.Use a for-loop 
+# to iterate over the grouped object. For each user’s data:sort the rows by timestamp. create a shapely.geometry.LineString based on the
+# user’s points. Remember that every LineString needs at least two points. Skip users who have less than two posts.
+# Store the results in a geopandas.GeoDataFrame called movements, and remember to assign a CRS.
+# d. Calculate the distance between all posts of a user. Check once more that the CRS of the data frame is correct Compute the lengths of the 
+# lines, and store it in a new column called distance
+# e. What was the shortest distance a user travelled between all their posts (in meters)? (store the value in a variable shortest_distance)
+# What was the mean distance travelled per user (in meters)? (store the value in a variable mean_distance)
+# What was the maximum distance a user travelled (in meters)? (store the value in a variable longest_distance)
+# f. Save the movements into a new Shapefile called movements.shp inside the data directory.
+
+
+# a. reading the file into the gdf
+kp_path = r'C:\Users\acer\Documents\projects\learning_gis\Exercises\kruger_points.shp'  #gets the path of the file to be read
+
+kruger_points = gpd.read_file(kp_path)
+
+
+# Transform the data from WGS84 to an EPSG:32735 projection
+to_utm = kruger_points.to_crs('EPSG:32735')
+to_utm.crs   #printing this to conform if it has transformed and print the geometries if the coordinates have changed
+
+
+
+# b. grouping data of the userid column 
+
+# showing the unique characters that would be grouped
+unique = kruger_points['userid'].unique()
+
+# grouping the userid column
+grouped_by_users = kruger_points.groupby('userid')
+
+# printing this just gives the datatype 
+(grouped_by_users)
+
+# view how the column was grouped with its allocated rows.This appears in a form of dictionary with the unique/group character as the key 
+# and the allocated rows as the value
+view_grouping = grouped_by_users.groups
+print(view_grouping)
+
+
+# grouping the timestamp in decsending order
+kruger_points['timestamp'] = gpd.to_datetime(kruger_points['timestamp'])
+
+geo_line =[]
+
+for user_id, group in grouped_by_users:
+
+    # Sort the rows by timestamp
+    group = group.sort_values('timestamp', descending = True)
+    
+    # Create LineString only if the user has at least two posts
+    if len(group) >= 2:
+        points = list(zip(group['lon'], group['lat']))
+        line = LineString(points)
+        
+        geo_line.append(line)
+        
+
 
 
 
