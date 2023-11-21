@@ -226,10 +226,10 @@ from geopandas import GeoDataFrame
 # creates a coordinates reference system (WSG84) 
 crs = 'EPSG:4326'  
 
-geo = gpd.GeoDataFrame(geometry =[polygon] , crs = crs)  #creates a geodataframe with the function taking a geometry and crs as constant arguments
+geo = gpd.GeoDataFrame(geometry =[polygon] , crs = crs)  #creates a geodataframe taking a geometry and crs as constant arguments
 
-# priint the data frame and crs to check if it has been created
-# print(geo)  and print(geo.crs)
+# print the data frame and crs to check if it has been created
+# print(geo) 
 
 
 # saves the geodataframe file to the laptop directory as a GeoPackage file
@@ -296,7 +296,7 @@ write_files
 # to iterate over the grouped object. For each user’s data:sort the rows by timestamp. create a shapely.geometry.LineString based on the
 # user’s points. Remember that every LineString needs at least two points. Skip users who have less than two posts.
 # Store the results in a geopandas.GeoDataFrame called movements, and remember to assign a CRS.
-# d. Calculate the distance between all posts of a user. Check once more that the CRS of the data frame is correct Compute the lengths of the 
+# d. Calculate the distance between all posts of a user. Check once more that the CRS of the data frame is correct. Compute the lengths of the 
 # lines, and store it in a new column called distance
 # e. What was the shortest distance a user travelled between all their posts (in meters)? (store the value in a variable shortest_distance)
 # What was the mean distance travelled per user (in meters)? (store the value in a variable mean_distance)
@@ -308,7 +308,7 @@ write_files
 kp_path = r'C:\Users\acer\Documents\projects\learning_gis\Exercises\kruger_points.shp'  #gets the path of the file to be read
 
 kruger_points = gpd.read_file(kp_path)
-
+# print(kruger_points)
 
 # Transform the data from WGS84 to an EPSG:32735 projection
 to_utm = kruger_points.to_crs('EPSG:32735')
@@ -325,36 +325,76 @@ unique = kruger_points['userid'].unique()
 grouped_by_users = kruger_points.groupby('userid')
 
 # printing this just gives the datatype 
-(grouped_by_users)
+# print(grouped_by_users)
 
 # view how the column was grouped with its allocated rows.This appears in a form of dictionary with the unique/group character as the key 
 # and the allocated rows as the value
 view_grouping = grouped_by_users.groups
-print(view_grouping)
+#print 
+# print(view_grouping)
 
 
 # grouping the timestamp in decsending order
-kruger_points['timestamp'] = gpd.to_datetime(kruger_points['timestamp'])
+# kruger_points['timestamp'] = gpd.to_datetime(kruger_points['timestamp'])
 
 geo_line =[]
 
 for user_id, group in grouped_by_users:
 
     # Sort the rows by timestamp
-    group = group.sort_values('timestamp', descending = True)
+    group = group.sort_values('timestamp')
     
     # Create LineString only if the user has at least two posts
     if len(group) >= 2:
         points = list(zip(group['lon'], group['lat']))
+        # print(points)
         line = LineString(points)
         
-        geo_line.append(line)
-        
+        # appends each user and their corresponding linestring. Creating a new gdf from scratch, create a dictionary of your column name
+        # and the values 
+        geo_line.append({'user_id' : user_id, 'geometry' : line})
+
+# print(geo_line)      
+
+
+
+from geopandas import GeoDataFrame
+
+# stores linestrings as a geodataframe
+movements = gpd.GeoDataFrame(geo_line, crs = 'EPSG:32735')
+# print(movements)
+
+# checks if the crs is the same
+movements.crs
+
+
+
+# create a new column names distance that calculates length of each linestring
+movements['Distance'] = movements['geometry'].length
+
+
+# calculate the shortest distance
+
+shortest_distance = movements['Distance'].min()
+(f'The shortest distance traveled was  {shortest_distance} meters')
+
+
+# calculate the mean distance travelled
+mean_distance = movements['Distance'].mean()
+(f'The mean distance travelled was {mean_distance} meters')
+
+
+# calculate the longest distance travelled
+longest_distance = movements['Distance'].max()
+(f'The longest distance travelled was {longest_distance} meters')
 
 
 
 
+# Save the movements into a new Shapefile called movements.shp 
 
+saving_movement = movements.to_file(r'C:\Users\acer\Documents\projects\learning_gis\Exercises\movements.shp')
+print(saving_movement)
 
 
 
