@@ -308,7 +308,7 @@ write_files
 kp_path = r'C:\Users\acer\Documents\projects\learning_gis\Exercises\kruger_points.shp'  #gets the path of the file to be read
 
 kruger_points = gpd.read_file(kp_path)
-# print(kruger_points)
+print(kruger_points)
 
 # Transform the data from WGS84 to an EPSG:32735 projection
 to_utm = kruger_points.to_crs('EPSG:32735')
@@ -394,7 +394,7 @@ longest_distance = movements['Distance'].max()
 # Save the movements into a new Shapefile called movements.shp 
 
 saving_movement = movements.to_file(r'C:\Users\acer\Documents\projects\learning_gis\Exercises\movements.shp')
-print(saving_movement)
+# print(saving_movement)
 
 
 
